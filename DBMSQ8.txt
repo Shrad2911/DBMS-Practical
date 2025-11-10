@@ -1,0 +1,85 @@
+CREATE DATABASE Q8;
+USE Q8;
+CREATE TABLE Companies (
+    comp_id INT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL,
+    cost DECIMAL(10,2),
+    year INT
+);
+
+CREATE TABLE Orders (
+    comp_id INT,
+    domain VARCHAR(50),
+    quantity INT,
+    FOREIGN KEY (comp_id) REFERENCES Companies(comp_id)
+);
+
+INSERT INTO Companies VALUES
+(101, 'TechM', 15000, 2018),
+(102, 'InfoSys', 18000, 2019),
+(103, 'TCS', 20000, 2020),
+(104, 'Wipro', 17000, 2017),
+(105, 'HCL', 16000, 2021),
+(106, 'Cognizant', 19000, 2022);   
+
+INSERT INTO Orders VALUES
+(101, 'AI', 50),
+(102, 'Cloud', 30),
+(103, 'Finance', 25),
+(106, 'Health', 15);
+
+--INNER JOIN Find names, costs, domains, and quantities for companies using INNER JOIN
+SELECT c.name, c.cost, o.domain, o.quantity
+FROM Companies c
+INNER JOIN Orders o
+ON c.comp_id = o.comp_id;
+
+--LEFT OUTER JOIN Find names, costs, domains, and quantities for companies using LEFT OUTER JOIN
+SELECT c.name, c.cost, o.domain, o.quantity
+FROM Companies c
+LEFT JOIN Orders o
+ON c.comp_id = o.comp_id;
+
+--RIGHT OUTER JOIN Find names, costs, domains, and quantities for companies using RIGHT OUTER JOIN
+SELECT c.name, c.cost, o.domain, o.quantity
+FROM Companies c
+RIGHT JOIN Orders o
+ON c.comp_id = o.comp_id;
+
+--UNION Find names, costs, domains, and quantities for companies using UNION operator
+SELECT c.name, c.cost, o.domain, o.quantity
+FROM Companies c
+LEFT JOIN Orders o
+ON c.comp_id = o.comp_id
+
+UNION
+
+SELECT c.name, c.cost, o.domain, o.quantity
+FROM Companies c
+RIGHT JOIN Orders o
+ON c.comp_id = o.comp_id;
+
+--Create View View1 Show company name and quantities (from both tables)
+CREATE VIEW View1 AS
+SELECT c.name AS Company_Name, o.quantity AS Quantity
+FROM Companies c
+LEFT JOIN Orders o
+ON c.comp_id = o.comp_id;
+SELECT * FROM View1;
+
+--Create View View2 Select any two columns and perform INSERT, UPDATE, DELETE
+CREATE VIEW View2 AS
+SELECT comp_id, name FROM Companies;
+
+INSERT INTO View2 VALUES (107, 'IBM');
+SELECT * FROM View2;
+
+UPDATE View2
+SET name = 'IBM Pvt Ltd'
+WHERE comp_id = 107;
+SELECT * FROM View2;
+
+DELETE FROM View2
+WHERE comp_id = 107;
+SELECT * FROM View2;
+

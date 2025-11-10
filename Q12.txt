@@ -1,0 +1,168 @@
+use companyDB;
+
+db.Employee.insertMany([
+  {
+    Emp_id: 1,
+    Name: { FName: "Swapnil", LName: "Jadhav" },
+    Company_name: "Infosys",
+    Salary: 90000,
+    Designation: "DBA",
+    Age: 28,
+    Expertise: ["MongoDB", "MySQL", "Cassandra"],
+    DOB: "1997-04-15",
+    Email: "swapnil.j@infosys.com",
+    Contact: "9876543210",
+    Address: [
+      { PAddr: "Pune", LAddr: "Mumbai" }
+    ]
+  },
+  {
+    Emp_id: 2,
+    Name: { FName: "Priya", LName: "Deshmukh" },
+    Company_name: "TCS",
+    Salary: 85000,
+    Designation: "Developer",
+    Age: 26,
+    Expertise: ["Java", "NodeJS", "MongoDB"],
+    DOB: "1999-01-10",
+    Email: "priya.d@tcs.com",
+    Contact: "9834567890",
+    Address: [
+      { PAddr: "Pune", LAddr: "Nagpur" }
+    ]
+  },
+  {
+    Emp_id: 3,
+    Name: { FName: "Rohan", LName: "Patil" },
+    Company_name: "Wipro",
+    Salary: 70000,
+    Designation: "Tester",
+    Age: 25,
+    Expertise: ["Selenium", "Cypress", "JMeter"],
+    DOB: "2000-03-25",
+    Email: "rohan.p@wipro.com",
+    Contact: "9823567410",
+    Address: [
+      { PAddr: "Nashik", LAddr: "Pune" }
+    ]
+  },
+  {
+    Emp_id: 4,
+    Name: { FName: "Sneha", LName: "Kulkarni" },
+    Company_name: "Infosys",
+    Salary: 95000,
+    Designation: "Developer",
+    Age: 30,
+    Expertise: ["React", "Angular", "MongoDB"],
+    DOB: "1995-06-22",
+    Email: "sneha.k@infosys.com",
+    Contact: "9876500011",
+    Address: [
+      { PAddr: "Mumbai", LAddr: "Pune" }
+    ]
+  },
+  {
+    Emp_id: 5,
+    Name: { FName: "Amit", LName: "More" },
+    Company_name: "TCS",
+    Salary: 110000,
+    Designation: "Manager",
+    Age: 35,
+    Expertise: ["Leadership", "Agile", "Scrum"],
+    DOB: "1990-12-12",
+    Email: "amit.m@tcs.com",
+    Contact: "9876123456",
+    Address: [
+      { PAddr: "Pune", LAddr: "Pune" }
+    ]
+  }
+]);
+
+
+//Using aggregation, return Designation with Total Salary above 200000
+db.Employee.aggregate([
+  {
+    $group: {
+      _id: "$Designation",
+      totalSalary: { $sum: "$Salary" },
+      count: { $sum: 1 }
+    }
+  },
+  {
+    $project: {
+      Designation: "$_id",
+      totalSalary: 1,
+      count: 1,
+      _id: 0
+    }
+  },
+  {
+    $sort: { totalSalary: -1 }
+  }
+]).pretty();
+
+
+//Return Names and _id in Uppercase, Sorted Alphabetically
+db.Employee.aggregate([
+  {
+    $project: {
+      _id: 1,
+      FullName: {
+        $concat: [
+          { $toUpper: "$Name.FName" },
+          " ",
+          { $toUpper: "$Name.LName" }
+        ]
+      }
+    }
+  },
+  {
+    $sort: { FullName: 1 }
+  }
+]).pretty();
+
+
+//Find Employee with Total Salary for Each City with Designation = "DBA"
+db.Employee.aggregate([
+  { $match: { Designation: "DBA" } },
+  { $unwind: "$Address" },
+  {
+    $group: {
+      _id: "$Address.PAddr",
+      totalSalary: { $sum: "$Salary" },
+      count: { $sum: 1 }
+    }
+  },
+  {
+    $project: {
+      City: "$_id",
+      totalSalary: 1,
+      count: 1,
+      _id: 0
+    }
+  }
+]).pretty();
+
+
+//Create a Single Field Index on Designation
+db.Employee.createIndex({ Designation: 1 });
+db.Employee.getIndexes();
+
+
+//Create a Multikey Index on Expertise
+db.Employee.createIndex({ Expertise: 1 });
+db.Employee.getIndexes();
+
+
+//Create an Index on Emp_id and Compare Search Time
+	//Before creating index:
+	db.Employee.find({ Emp_id: 5000 }).explain("executionStats");
+
+	//Create index:
+	db.Employee.createIndex({ Emp_id: 1 });
+
+	//After creating index:
+	db.Employee.find({ Emp_id: 5000 }).explain("executionStats");
+
+//Return a List of All Indexes Created
+db.Employee.getIndexes();

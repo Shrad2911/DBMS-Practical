@@ -1,0 +1,89 @@
+CREATE DATABASE Q9;
+USE Q9;
+CREATE TABLE CUSTOMERS (
+    CNo INT PRIMARY KEY,
+    Cname VARCHAR(50) NOT NULL,
+    Ccity VARCHAR(50),
+    CMobile VARCHAR(15) UNIQUE
+);
+
+CREATE TABLE ITEMS (
+    INo INT PRIMARY KEY,
+    Iname VARCHAR(50) NOT NULL,
+    Itype VARCHAR(30),
+    Iprice DECIMAL(10,2) CHECK (Iprice > 0),
+    Icount INT CHECK (Icount >= 0)
+);
+
+CREATE TABLE PURCHASE (
+    PNo INT PRIMARY KEY,
+    Pdate DATE NOT NULL,
+    Pquantity INT CHECK (Pquantity > 0),
+    CNo INT,
+    INo INT,
+    FOREIGN KEY (CNo) REFERENCES CUSTOMERS(CNo),
+    FOREIGN KEY (INo) REFERENCES ITEMS(INo)
+);
+
+INSERT INTO CUSTOMERS VALUES
+(1, 'Gopal', 'Mumbai', '9876543210'),
+(2, 'Maya', 'Pune', '9988776655'),
+(3, 'Ravi', 'Delhi', '9123456780'),
+(4, 'Neha', 'Pune', '9898989898');
+
+INSERT INTO ITEMS VALUES
+(101, 'Notebook', 'Stationary', 500, 100),
+(102, 'Pen', 'Stationary', 50, 500),
+(103, 'Printer', 'Electronics', 8000, 10),
+(104, 'Marker', 'Stationary', 800, 60),
+(105, 'Laptop', 'Electronics', 55000, 5);
+
+INSERT INTO PURCHASE VALUES
+(201, '2025-10-10', 10, 1, 101),
+(202, '2025-11-01', 5, 2, 104),
+(203, '2025-09-15', 1, 3, 105),
+(204, '2025-11-03', 3, 2, 102),
+(205, '2025-08-20', 2, 4, 103);
+
+-- List all stationary items with price between 400/- to 1000/-
+SELECT * FROM ITEMS
+WHERE Itype = 'Stationary' 
+AND Iprice BETWEEN 400 AND 1000;
+
+--Change the mobile number of customer “Gopal” 
+UPDATE CUSTOMERS
+SET CMobile = '9000011111'
+WHERE Cname = 'Gopal';
+
+SELECT * FROM CUSTOMERS WHERE Cname = 'Gopal';
+
+--Display the item with maximum price 
+SELECT Iname, Iprice
+FROM ITEMS
+WHERE Iprice = (SELECT MAX(Iprice) FROM ITEMS);
+
+--Display all purchases sorted from the most recent to the oldest
+SELECT * 
+FROM PURCHASE
+ORDER BY Pdate DESC;
+
+--Count the number of customers in every city 
+SELECT Ccity, COUNT(*) AS Customer_Count
+FROM CUSTOMERS
+GROUP BY Ccity;
+
+--Display all purchased quantity of Customer Maya 
+SELECT c.Cname, i.Iname, p.Pquantity
+FROM PURCHASE p
+JOIN CUSTOMERS c ON p.CNo = c.CNo
+JOIN ITEMS i ON p.INo = i.INo
+WHERE c.Cname = 'Maya';
+
+--Create view which shows Iname, Price and Count of all stationary items in descending order of price
+CREATE VIEW Stationary_View AS
+SELECT Iname, Iprice, Icount
+FROM ITEMS
+WHERE Itype = 'Stationary'
+ORDER BY Iprice DESC;
+
+SELECT * FROM Stationary_View;

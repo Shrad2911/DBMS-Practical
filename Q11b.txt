@@ -1,0 +1,135 @@
+use companyDB
+
+db.Employee.insertMany([
+  {
+    Emp_id: 101,
+    Name: { FName: "Rahul", LName: "Sharma" },
+    Company_name: "Infosys",
+    Salary: 55000,
+    Designation: "Developer",
+    Age: 28,
+    Expertise: ["MongoDB", "NodeJS", "JavaScript"],
+    DOB: new Date("1997-06-15"),
+    Email: "rahul.sharma@infosys.com",
+    Contact: "9876543210",
+    Address: [{ PAddr: "Delhi", LAddr: "Pune" }]
+  },
+  {
+    Emp_id: 102,
+    Name: { FName: "Sneha", LName: "Patil" },
+    Company_name: "TCS",
+    Salary: 48000,
+    Designation: "Tester",
+    Age: 25,
+    Expertise: ["Manual Testing", "Selenium"],
+    DOB: new Date("1999-03-20"),
+    Email: "sneha.patil@tcs.com",
+    Contact: "9812345678",
+    Address: [{ PAddr: "Mumbai", LAddr: "Pune" }]
+  },
+  {
+    Emp_id: 103,
+    Name: { FName: "Amit", LName: "Deshmukh" },
+    Company_name: "TCS",
+    Salary: 60000,
+    Designation: "DBA",
+    Age: 30,
+    Expertise: ["MongoDB", "SQL", "Oracle"],
+    DOB: new Date("1995-09-05"),
+    Email: "amit.deshmukh@tcs.com",
+    Contact: "9998877665",
+    Address: [{ PAddr: "Nagpur", LAddr: "Pune" }]
+  },
+  {
+    Emp_id: 104,
+    Name: { FName: "Priya", LName: "Verma" },
+    Company_name: "Wipro",
+    Salary: 45000,
+    Designation: "Developer",
+    Age: 26,
+    Expertise: ["Java", "SpringBoot", "React"],
+    DOB: new Date("1998-07-25"),
+    Email: "priya.verma@wipro.com",
+    Contact: "9123456789",
+    Address: [{ PAddr: "Pune", LAddr: "Pune" }]
+  },
+  {
+    Emp_id: 105,
+    Name: { FName: "Swapnil", LName: "Jadhav" },
+    Company_name: "Infosys",
+    Salary: 70000,
+    Designation: "Manager",
+    Age: 32,
+    Expertise: ["Leadership", "Project Management"],
+    DOB: new Date("1993-01-10"),
+    Email: "swapnil.jadhav@infosys.com",
+    Contact: "9765432100",
+    Address: [{ PAddr: "Pune", LAddr: "Mumbai" }]
+  }
+])
+
+db.Employee.find().pretty()
+
+//Create document if not found (Upsert)
+db.Employee.updateOne(
+  { Designation: "Tester", Company_name: "TCS", Age: 25 },
+  {
+    $setOnInsert: {
+      Emp_id: 106,
+      Name: { FName: "Rohan", LName: "Mehta" },
+      Salary: 40000,
+      Expertise: ["Testing", "Automation"],
+      DOB: new Date("1999-05-12"),
+      Email: "rohan.mehta@tcs.com",
+      Contact: "9001122334",
+      Address: [{ PAddr: "Nashik", LAddr: "Pune" }]
+    }
+  },
+  { upsert: true }
+)
+
+db.Employee.find({ Designation: "Tester", Company_name: "TCS", Age: 25 }).pretty()
+
+
+//Increase Salary by 2000 for TCS Employees
+db.Employee.updateMany(
+  { Company_name: "TCS" },
+  { $inc: { Salary: 2000 } }
+)
+
+db.Employee.find(
+  { Company_name: "TCS" },
+  { Name: 1, Salary: 1, Company_name: 1, _id: 0 }
+).pretty()
+
+//Match Address Embedded Doc (city="Pune", Pin_code="411001")
+db.Employee.insertOne({
+  Emp_id: 107,
+  Name: { FName: "Karan", LName: "Patil" },
+  Company_name: "HCL",
+  Salary: 46000,
+  Designation: "Developer",
+  Age: 27,
+  Expertise: ["Python", "MongoDB"],
+  DOB: new Date("1998-02-11"),
+  Email: "karan.patil@hcl.com",
+  Contact: "9997766554",
+  Address: [{ city: "Pune", Pin_code: "411001" }]
+})
+
+db.Employee.find({
+  Address: { $elemMatch: { city: "Pune", Pin_code: "411001" } }
+}).pretty()
+
+//Find Employees who are Developer or Tester
+db.Employee.find(
+  { Designation: { $in: ["Developer", "Tester"] } }
+).pretty()
+
+//Drop a Single Document where Designation = "Developer"
+db.Employee.deleteOne({ Designation: "Developer" })
+
+db.Employee.find({}, { Name: 1, Designation: 1, _id: 0 }).pretty()
+
+//Count Total Documents in Employee Collection
+db.Employee.countDocuments()

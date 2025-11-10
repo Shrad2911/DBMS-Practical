@@ -1,0 +1,176 @@
+use companyDB;
+db.employee.drop();
+
+db.employee.insertMany([
+  {
+    Name: { FName: "Swapnil", LName: "Jadhav" },
+    CompanyName: "TCS",
+    Salary: 75000,
+    Designation: "DBA",
+    Age: 35,
+    Expertise: ["MongoDB", "Backup"],
+    DOB: new Date("1989-05-12"),
+    Email: "swapnil.jadhav@tcs.com",
+    Contact: "9876543210",
+    Address: [
+      { PAddr: "Kothrud", LAddr: "Shivaji Nagar", city: "Pune" }
+    ]
+  },
+  {
+    Name: { FName: "Asha", LName: "Patil" },
+    CompanyName: "Infosys",
+    Salary: 65000,
+    Designation: "Developer",
+    Age: 28,
+    Expertise: ["Node.js", "React"],
+    DOB: new Date("1996-07-22"),
+    Email: "asha.patil@infosys.com",
+    Contact: "9856781234",
+    Address: [
+      { PAddr: "Viman Nagar", LAddr: "Airport Road", city: "Pune" }
+    ]
+  },
+  {
+    Name: { FName: "Raj", LName: "Verma" },
+    CompanyName: "TCS",
+    Salary: 82000,
+    Designation: "Analyst",
+    Age: 42,
+    Expertise: ["Python", "MongoDB"],
+    DOB: new Date("1983-03-10"),
+    Email: "raj.verma@tcs.com",
+    Contact: "9823456789",
+    Address: [
+      { PAddr: "Andheri", LAddr: "East", city: "Mumbai" }
+    ]
+  },
+  {
+    Name: { FName: "Neha", LName: "Sharma" },
+    CompanyName: "Wipro",
+    Salary: 70000,
+    Designation: "Tester",
+    Age: 30,
+    Expertise: ["Manual", "Automation"],
+    DOB: new Date("1994-02-15"),
+    Email: "neha.sharma@wipro.com",
+    Contact: "9812345678",
+    Address: [
+      { PAddr: "MG Road", LAddr: "Central", city: "Bangalore" }
+    ]
+  },
+  {
+    Name: { FName: "Karan", LName: "Mehta" },
+    CompanyName: "TCS",
+    Salary: 90000,
+    Designation: "Manager",
+    Age: 45,
+    Expertise: ["Leadership", "Database"],
+    DOB: new Date("1980-12-01"),
+    Email: "karan.mehta@tcs.com",
+    Contact: "9001234567",
+    Address: [
+      { PAddr: "Baner", LAddr: "Pashan", city: "Pune" }
+    ]
+  }
+]);
+
+//Display the total salary per company
+var mapCompanySalary = function() {
+  emit(this.CompanyName, this.Salary);
+};
+var reduceCompanySalary = function(key, values) {
+  return Array.sum(values);
+};
+db.employee.mapReduce(
+  mapCompanySalary,
+  reduceCompanySalary,
+  { out: "totalSalaryPerCompany" }
+);
+db.totalSalaryPerCompany.find();
+
+
+//Display the total salary for company Name: "TCS"
+db.employee.mapReduce(
+  mapCompanySalary,
+  reduceCompanySalary,
+  {
+    query: { CompanyName: "TCS" },
+    out: "totalSalaryTCS"
+  }
+);
+
+db.totalSalaryTCS.find();
+
+
+//Return the average salary of company whose address city = "Pune"
+var mapPuneAvg = function() {
+  // Unwind city array by iteration
+  this.Address.forEach(function(addr) {
+    if (addr.city === "Pune") {
+      emit(this.CompanyName, { sum: this.Salary, count: 1 });
+    }
+  }, this);
+};
+var reducePuneAvg = function(key, values) {
+  var result = { sum: 0, count: 0 };
+  values.forEach(function(v) {
+    result.sum += v.sum;
+    result.count += v.count;
+  });
+  return result;
+};
+var finalizePuneAvg = function(key, reducedValue) {
+  return reducedValue.sum / reducedValue.count;
+};
+db.employee.mapReduce(
+  mapPuneAvg,
+  reducePuneAvg,
+  {
+    out: "avgSalaryPuneCompany",
+    finalize: finalizePuneAvg
+  }
+);
+
+db.avgSalaryPuneCompany.find();
+
+
+//Display total count for “City = Pune”
+var mapCityCount = function() {
+  this.Address.forEach(function(addr) {
+    if (addr.city === "Pune") {
+      emit(addr.city, 1);
+    }
+  });
+};
+var reduceCityCount = function(key, values) {
+  return Array.sum(values);
+};
+db.employee.mapReduce(
+  mapCityCount,
+  reduceCityCount,
+  { out: "countPune" }
+);
+
+db.countPune.find();
+
+
+//Return count for City = Pune and Age > 40
+var mapCityAge = function() {
+  this.Address.forEach(function(addr) {
+    if (addr.city === "Pune" && this.Age > 40) {
+      emit(addr.city, 1);
+    }
+  }, this);
+};
+var reduceCityAge = function(key, values) {
+  return Array.sum(values);
+};
+db.employee.mapReduce(
+  mapCityAge,
+  reduceCityAge,
+  { out: "countPuneAgeGT40" }
+);
+
+db.countPuneAgeGT40.find();
+S
+

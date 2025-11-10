@@ -1,0 +1,30 @@
+CREATE OR REPLACE FUNCTION Age_calc(
+    p_dob IN DATE,
+    p_months OUT NUMBER,
+    p_days OUT NUMBER
+)
+RETURN NUMBER
+IS
+    v_years NUMBER;
+    v_today DATE := SYSDATE;
+    v_temp_date DATE;
+BEGIN
+    v_years := TRUNC(MONTHS_BETWEEN(v_today, p_dob) / 12);
+    v_temp_date := ADD_MONTHS(p_dob, v_years * 12);
+    p_months := TRUNC(MONTHS_BETWEEN(v_today, v_temp_date));
+    v_temp_date := ADD_MONTHS(v_temp_date, p_months);
+    p_days := TRUNC(v_today - v_temp_date);
+    RETURN v_years;
+END;
+/
+SET SERVEROUTPUT ON;
+
+DECLARE
+    v_years NUMBER;
+    v_months NUMBER;
+    v_days NUMBER;
+BEGIN
+    v_years := Age_calc(TO_DATE('15-03-2000','DD-MM-YYYY'), v_months, v_days);
+    DBMS_OUTPUT.PUT_LINE('Age: ' || v_years || ' years, ' || v_months || ' months, ' || v_days || ' days');
+END;
+/

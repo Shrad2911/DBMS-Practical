@@ -1,0 +1,65 @@
+CREATE TABLE Borrower (
+    Rollin NUMBER PRIMARY KEY,
+    Name VARCHAR2(50),
+    DateofIssue DATE,
+    NameofBook VARCHAR2(100),
+    Status CHAR(1)
+);
+
+CREATE TABLE Fine (
+    Roll_no NUMBER,
+    FineDate DATE,
+    Amt NUMBER(10,2)
+);
+
+INSERT INTO Borrower VALUES (1, 'Amit Sharma', DATE '2025-10-01', 'DBMS Concepts', 'I');
+INSERT INTO Borrower VALUES (2, 'Neha Gupta', DATE '2025-10-20', 'Operating Systems', 'I');
+INSERT INTO Borrower VALUES (3, 'Rohit Mehta', DATE '2025-09-25', 'Python Programming', 'I');
+INSERT INTO Borrower VALUES (4, 'Sneha Iyer', DATE '2025-11-01', 'Computer Networks', 'I');
+COMMIT;
+
+SET SERVEROUTPUT ON;
+
+DECLARE
+    v_roll Borrower.Rollin%TYPE;
+    v_book Borrower.NameofBook%TYPE;
+    v_dateofissue DATE;
+    v_days NUMBER;
+    v_fine NUMBER;
+BEGIN
+    v_roll := &Enter_Roll_No;
+    v_book := '&Enter_Book_Name';
+
+    SELECT DateofIssue INTO v_dateofissue
+    FROM Borrower
+    WHERE Rollin = v_roll AND NameofBook = v_book AND Status = 'I';
+
+    v_days := TRUNC(SYSDATE - v_dateofissue);
+
+    IF v_days > 15 THEN
+        IF v_days <= 30 THEN
+            v_fine := (v_days - 15) * 5;
+        ELSE
+            v_fine := (15 * 5) + ((v_days - 30) * 50);
+        END IF;
+
+        INSERT INTO Fine VALUES (v_roll, SYSDATE, v_fine);
+        DBMS_OUTPUT.PUT_LINE('Fine applicable: Rs ' || v_fine);
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('No fine. Book returned on time.');
+    END IF;
+
+    UPDATE Borrower
+    SET Status = 'R'
+    WHERE Rollin = v_roll AND NameofBook = v_book;
+
+    COMMIT;
+
+    DBMS_OUTPUT.PUT_LINE('Book status updated to Returned.');
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('Error: Record not found or book already returned.');
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
+END;
+/

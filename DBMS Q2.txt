@@ -1,0 +1,104 @@
+CREATE DATABASE Q2;
+USE  Q2;
+CREATE TABLE Branch(
+	branch_name VARCHAR(50) PRIMARY KEY,
+	branch_city VARCHAR(50) NOT NULL,
+	assets VARCHAR(50)
+);
+CREATE TABLE Account(
+	acc_no VARCHAR(50) PRIMARY KEY,
+	branch_name  VARCHAR(50),
+	balance INT,
+	FOREIGN KEY (branch_name) REFERENCES Branch(branch_name)
+);
+CREATE TABLE Customer (
+	cust_name VARCHAR(50)  PRIMARY KEY,
+	cust_street VARCHAR(50),
+	cust_city VARCHAR(50)
+);
+CREATE TABLE Depositor(
+	cust_name VARCHAR(50),
+	acc_no VARCHAR(50)
+);
+ALTER TABLE Depositor ADD FOREIGN KEY (cust_name) REFERENCES Customer(cust_name);
+ALTER TABLE Depositor ADD FOREIGN KEY (acc_no) REFERENCES Account(acc_no);
+
+CREATE TABLE Loan(
+	loan_no VARCHAR(50) PRIMARY KEY,
+	branch_name VARCHAR(50),
+	amount INT,
+	FOREIGN KEY (branch_name)  REFERENCES Branch(branch_name)
+);
+CREATE TABLE Borrower(
+	cust_name  VARCHAR(50) ,
+	loan_no VARCHAR(50),
+	FOREIGN KEY (cust_name)  REFERENCES Customer(cust_name),
+	FOREIGN KEY (loan_no) REFERENCES Loan(loan_no)
+); 
+INSERT INTO Branch VALUES
+ ('Wadia College', 'Pune', 9000000),
+ ('Camp', 'Pune', 7500000),
+ ('Kothrud', 'Pune', 5000000),
+ ('MG Road', 'Mumbai', 10000000);
+
+INSERT INTO Account VALUES
+(101, 'Wadia College', 25000),
+(102, 'Camp', 30000),
+(103, 'Kothrud', 18000),
+(104, 'MG Road', 50000);
+
+INSERT INTO Customer VALUES
+('Ajay Shah', 'FC Road', 'Pune'),
+('Neha Patil', 'MG Road', 'Mumbai'),
+('Rahul Deshmukh', 'Karve Nagar', 'Pune'),
+('Sneha Joshi', 'JM Road', 'Pune'),
+('Ravi Kumar', 'Camp', 'Pune');
+
+INSERT INTO Depositor VALUES
+('Ajay Shah', 101),
+('Neha Patil', 104),
+('Rahul Deshmukh', 103),
+('Sneha Joshi', 102),
+('Ravi Kumar', 101);
+
+INSERT INTO Loan VALUES
+(201, 'Wadia College', 15000),
+(202, 'Camp', 12000),
+(203, 'Kothrud', 18000),
+(204, 'Wadia College', 25000),
+(205, 'MG Road', 10000);
+
+INSERT INTO Borrower VALUES
+('Ajay Shah', 201),
+('Neha Patil', 205),
+('Ravi Kumar', 204),
+('Rahul Deshmukh', 203);
+
+--Find all customers who have both an account and a loan at the bank
+SELECT DISTINCT d.cust_name
+FROM Depositor d
+JOIN Borrower b ON d.cust_name = b.cust_name;
+
+--Find all customers who have an account or a loan or both at the bank
+SELECT cust_name FROM Depositor
+UNION
+SELECT cust_name FROM Borrower;
+
+--Find all customers who have an account but no loan at the bank
+SELECT DISTINCT d.cust_name
+FROM Depositor d
+WHERE d.cust_name NOT IN (
+    SELECT b.cust_name FROM Borrower b
+);
+
+--Find average account balance at ‘Wadia College’ branch
+SELECT branch_name, AVG(balance) AS avg_balance
+FROM Account
+WHERE branch_name = 'Wadia College'
+GROUP BY branch_name;
+
+--Find number of depositors at each branch
+SELECT a.branch_name, COUNT(DISTINCT d.cust_name) AS num_depositors
+FROM Depositor d
+JOIN Account a ON d.acc_no = a.acc_no
+GROUP BY a.branch_name;

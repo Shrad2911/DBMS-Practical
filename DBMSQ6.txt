@@ -1,0 +1,94 @@
+CREATE DATABASE Q6;
+USE Q6;
+CREATE TABLE Employee (
+    emp_id VARCHAR(10) PRIMARY KEY,
+    employee_name VARCHAR(50) NOT NULL UNIQUE,
+    street VARCHAR(50),
+    city VARCHAR(50)
+);
+
+CREATE TABLE Company (
+    company_name VARCHAR(50) PRIMARY KEY,
+    city VARCHAR(50) NOT NULL
+);
+CREATE TABLE Works (
+    emp_id VARCHAR(10) NOT NULL,
+    company_name VARCHAR(50) NOT NULL,
+    salary DECIMAL(10,2) CHECK (salary > 0),
+    FOREIGN KEY (emp_id) REFERENCES Employee(emp_id),
+    FOREIGN KEY (company_name) REFERENCES Company(company_name)
+);
+
+CREATE TABLE Manages (
+    emp_id VARCHAR(10) NOT NULL,
+    manager_id VARCHAR(10) NOT NULL,
+    FOREIGN KEY (emp_id) REFERENCES Employee(emp_id),
+    FOREIGN KEY (manager_id) REFERENCES Employee(emp_id)
+);
+
+-- Employee table
+INSERT INTO Employee VALUES
+('E101', 'Ramesh', 'MG Road', 'Pune'),
+('E102', 'Suresh', 'BTM Layout', 'Hyderabad'),
+('E103', 'Mahesh', 'Marine Drive', 'Mumbai'),
+('E104', 'Neha', 'Koregaon Park', 'Pune'),
+('E105', 'Aarti', 'Andheri', 'Mumbai');
+
+-- Company table
+INSERT INTO Company VALUES
+('TCS', 'Pune'),
+('InfoSys', 'Hyderabad'),
+('TechM', 'Chennai'),
+('Wipro', 'Bangalore');
+
+-- Works table
+INSERT INTO Works VALUES
+('E101', 'TCS', 8000),
+('E102', 'InfoSys', 12000),
+('E103', 'TechM', 15000),
+('E104', 'TCS', 9000),
+('E105', 'Wipro', 11000);
+
+-- Manages table
+INSERT INTO Manages VALUES
+('E101', 'E104'),
+('E102', 'E105'),
+('E103', 'E102');
+
+--Change the city of employee working with 'InfoSys' to 'Bangalore'
+UPDATE Employee
+SET city = 'Bangalore'
+WHERE emp_id IN (
+    SELECT emp_id FROM Works WHERE company_name = 'InfoSys'
+);
+
+--Find the names of employees who earn more than the average salary of their company
+SELECT e.employee_name, w.company_name, w.salary
+FROM Employee e
+JOIN Works w ON e.emp_id = w.emp_id
+WHERE w.salary > (
+    SELECT AVG(w2.salary)
+    FROM Works w2
+    WHERE w2.company_name = w.company_name
+);
+
+--Find the names, street, and city of employees working for 'TechM' earning > $10,000
+SELECT e.employee_name, e.street, e.city
+FROM Employee e
+JOIN Works w ON e.emp_id = w.emp_id
+WHERE w.company_name = 'TechM' AND w.salary > 10000;
+
+--Change table name from Manages to Management
+RENAME TABLE Manages TO Management;
+SHOW TABLES;
+
+--Create Simple and Unique Index on Employee table
+-- Simple index on employee_name
+CREATE INDEX idx_emp_name ON Employee(employee_name);
+
+-- Unique index on emp_id
+CREATE UNIQUE INDEX idx_emp_id ON Employee(emp_id);
+
+--Display Index Information
+SHOW INDEX FROM Employee;
+

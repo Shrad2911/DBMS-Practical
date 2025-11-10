@@ -1,0 +1,375 @@
+Ques: Cust-Order-pdt
+Create following tables with suitable constraints (primary key, foreign key, not null etc). 
+ 
+Create table Cust_Master(Cust_no, Cust_name, Cust_addr)  
+Create table Order(Order_no, Cust_no, Order_date, Qty_Ordered) 
+Create Product(Product_no, Product_name, Order_no) 
+
+CREATE TABLE Cust_Master (
+    Cust_no INT PRIMARY KEY,
+    Cust_name VARCHAR(50) NOT NULL,
+    Cust_addr VARCHAR(100)
+);
+
+CREATE TABLE Order_Master (
+    Order_no INT PRIMARY KEY,
+    Cust_no INT,
+    Order_date DATE NOT NULL,
+    Qty_Ordered INT CHECK (Qty_Ordered > 0),
+    FOREIGN KEY (Cust_no) REFERENCES Cust_Master(Cust_no)
+);
+CREATE TABLE Product (
+    Product_no INT PRIMARY KEY,
+    Product_name VARCHAR(50) NOT NULL,
+    Order_no INT,
+    FOREIGN KEY (Order_no) REFERENCES Order_Master(Order_no)
+);
+
+
+ 
+1. List names of customers having 'A' as second letter in their 
+name. 
+
+SELECT Cust_name
+FROM Cust_Master
+WHERE Cust_name LIKE '_A%';
+
+2. Display order from Customer no C1002,C1005,C1007 and C1008 
+
+SELECT *
+FROM Order_Master
+WHERE Cust_no IN ('C1002', 'C1005', 'C1007', 'C1008');
+
+
+3. List Clients who stay in either 'Banglore or 'Manglore' 
+
+SELECT Cust_name, Cust_addr
+FROM Cust_Master
+WHERE Cust_addr IN ('Bangalore', 'Mangalore');
+
+
+
+4. Display name of customers& the product_name they have purchase
+SELECT C.Cust_name, P.Product_name
+FROM Cust_Master C
+JOIN Order_Master O ON C.Cust_no = O.Cust_no
+JOIN Product P ON O.Order_no = P.Order_no;
+
+ 
+5. Create view View1 consisting of Cust_name, Product_name. 
+
+CREATE VIEW View1 AS
+SELECT C.Cust_name, P.Product_name
+FROM Cust_Master C
+JOIN Order_Master O ON C.Cust_no = O.Cust_no
+JOIN Product P ON O.Order_no = P.Order_no;
+SELECT * FROM View1;
+
+6. Disply product_name and quantity purchase by each customer 
+
+SELECT C.Cust_name, P.Product_name, O.Qty_Ordered
+FROM Cust_Master C
+JOIN Order_Master O ON C.Cust_no = O.Cust_no
+JOIN Product P ON O.Order_no = P.Order_no;
+
+
+7. Perform different joint operation.
+
+inner join:
+SELECT C.Cust_name, O.Order_no
+FROM Cust_Master C
+INNER JOIN Order_Master O
+ON C.Cust_no = O.Cust_no;
+
+ left join :
+SELECT C.Cust_name, O.Order_no
+FROM Cust_Master C
+LEFT JOIN Order_Master O
+ON C.Cust_no = O.Cust_no;
+
+RIGHT JOIN — all orders, even if customer info missing
+SELECT C.Cust_name, O.Order_no
+FROM Cust_Master C
+RIGHT JOIN Order_Master O
+ON C.Cust_no = O.Cust_no;
+ 
+full join:
+ SELECT C.Cust_name, O.Order_no
+FROM Cust_Master C
+FULL OUTER JOIN Order_Master O
+ON C.Cust_no = O.Cust_no;
+
+
+Ques. cust-item-purchase
+ CUSTOMERS(CNo, Cname, Ccity, CMobile)
+ITEMS(INo, Iname, Itype, Iprice, Icount) 
+PURCHASE(PNo, Pdate, Pquantity, Cno, INo)
+
+CREATE TABLE CUSTOMERS (
+    CNo INT PRIMARY KEY,
+    Cname VARCHAR(50) NOT NULL,
+    Ccity VARCHAR(50),
+    CMobile VARCHAR(15) UNIQUE
+);
+
+CREATE TABLE ITEMS (
+    INo INT PRIMARY KEY,
+    Iname VARCHAR(50) NOT NULL,
+    Itype VARCHAR(30),
+    Iprice DECIMAL(10,2) CHECK (Iprice > 0),
+    Icount INT CHECK (Icount >= 0)
+);
+
+CREATE TABLE PURCHASE (
+    PNo INT PRIMARY KEY,
+    Pdate DATE,
+    Pquantity INT CHECK (Pquantity > 0),
+    CNo INT,
+    INo INT,
+    FOREIGN KEY (CNo) REFERENCES CUSTOMERS(CNo),
+    FOREIGN KEY (INo) REFERENCES ITEMS(INo)
+);
+ 
+
+1. List all stationary items with price between 400/- to 1000/- 
+SELECT Iname, Iprice
+FROM ITEMS
+WHERE Itype = 'Stationary' AND Iprice BETWEEN 400 AND 1000;
+
+
+2. Change the mobile number of customer “Gopal” 
+
+UPDATE CUSTOMERS
+SET CMobile = '9999999999'
+WHERE Cname = 'Gopal';
+
+3. Display the item with maximum price
+SELECT Iname, Iprice
+FROM ITEMS
+WHERE Iprice = (SELECT MAX(Iprice) FROM ITEMS);
+
+
+4. Display all purchases sorted from the most recent to the oldest
+SELECT * 
+FROM PURCHASE
+ORDER BY Pdate DESC;
+
+
+5. Count the number of customers in every city 
+SELECT Ccity, COUNT(*) AS No_of_Customers
+FROM CUSTOMERS
+GROUP BY Ccity;
+
+
+6. Display all purchased quantity of Customer Maya 
+SELECT C.Cname, I.Iname, P.Pquantity
+FROM PURCHASE P
+JOIN CUSTOMERS C ON P.CNo = C.CNo
+JOIN ITEMS I ON P.INo = I.INo
+WHERE C.Cname = 'Maya';
+
+7. Create view which shows Iname, Price and Count of all stationary items in descending order of price.
+
+CREATE VIEW Stationary_View AS
+SELECT Iname, Iprice, Icount
+FROM ITEMS
+WHERE Itype = 'Stationary'
+ORDER BY Iprice DESC;
+
+SELECT * FROM Stationary_View;
+
+
+Ques.
+Companies(comp_id, name, cost, year) 
+Orders(comp_id, domain, quantity)
+
+CREATE TABLE Companies (
+    comp_id INT PRIMARY KEY,
+    name VARCHAR(50),
+    cost DECIMAL(10,2),
+    year INT
+);
+
+CREATE TABLE Orders (
+    comp_id INT,
+    domain VARCHAR(50),
+    quantity INT,
+    FOREIGN KEY (comp_id) REFERENCES Companies(comp_id)
+);
+
+INSERT INTO Companies VALUES
+(1, 'TCS', 500000, 2020),
+(2, 'Infosys', 400000, 2021),
+(3, 'Wipro', 350000, 2019),
+(4, 'TechMahindra', 300000, 2022);
+
+INSERT INTO Orders VALUES
+(1, 'AI', 5),
+(2, 'Web', 10),
+(4, 'Cloud', 8),
+(5, 'Data', 12);   -- company not present in Companies
+
+1. Find names, costs, domains and quantities for companies using inner join.
+
+SELECT C.name, C.cost, O.domain, O.quantity
+FROM Companies C
+INNER JOIN Orders O
+ON C.comp_id = O.comp_id;
+ 
+2. Find names, costs, domains and quantities for companies using left outer join.
+SELECT C.name, C.cost, O.domain, O.quantity
+FROM Companies C
+LEFT OUTER JOIN Orders O
+ON C.comp_id = O.comp_id;
+
+3. Find names, costs, domains, and quantities for companies using right outer join
+
+SELECT C.name, C.cost, O.domain, O.quantity
+FROM Companies C
+RIGHT OUTER JOIN Orders O
+ON C.comp_id = O.comp_id;
+4. Combine INNER JOIN and RIGHT JOIN results (removes duplicates).
+
+SELECT C.name, C.cost, O.domain, O.quantity
+FROM Companies C
+INNER JOIN Orders O
+ON C.comp_id = O.comp_id
+
+UNION
+
+SELECT C.name, C.cost, O.domain, O.quantity
+FROM Companies C
+RIGHT JOIN Orders O
+ON C.comp_id = O.comp_id;
+
+5.View that shows company name and quantities from both tables.
+
+CREATE VIEW View1 AS
+SELECT C.name, O.quantity
+FROM Companies C
+LEFT JOIN Orders O
+ON C.comp_id = O.comp_id;
+
+SELECT * FROM View1;
+
+6.View with two columns (e.g., name and cost) and perform INSERT, UPDATE, DELETE.
+
+CREATE VIEW View2 AS
+SELECT name, cost FROM Companies;
+
+INSERT INTO View2 (name, cost)
+VALUES ('HCL', 280000);
+
+UPDATE View2
+SET cost = 310000
+WHERE name = 'HCL';
+
+DELETE FROM View2
+WHERE name = 'HCL';
+
+7.Display content of View1 and View2
+
+SELECT * FROM View1;
+
+SELECT * FROM View2;
+
+Ques:
+Consider following Relation
+ Employee(emp_id,employee_name,street,city)
+ Works(employee_name,company_name,salary) 
+ Company(company_name,city) 
+Manages(employee_name,manager_name)
+
+CREATE TABLE Employee (
+    emp_id INT PRIMARY KEY,
+    employee_name VARCHAR(50) NOT NULL,
+    street VARCHAR(50),
+    city VARCHAR(50)
+);
+
+CREATE TABLE Company (
+    company_name VARCHAR(50) PRIMARY KEY,
+    city VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE Works (
+    employee_name VARCHAR(50),
+    company_name VARCHAR(50),
+    salary DECIMAL(10,2) CHECK (salary > 0),
+    FOREIGN KEY (employee_name) REFERENCES Employee(employee_name),
+    FOREIGN KEY (company_name) REFERENCES Company(company_name)
+);
+
+CREATE TABLE Manages (
+    employee_name VARCHAR(50),
+    manager_name VARCHAR(50),
+    FOREIGN KEY (employee_name) REFERENCES Employee(employee_name)
+);
+
+
+1. Find the names of all employees who work for 'TCS'
+SELECT employee_name
+FROM Works
+WHERE company_name = 'TCS';
+
+2.Find the names and company names of all employees sorted by company name (ASC) and employee name (DESC)
+select employee_name, company names
+from Work
+order by employee_name DESC, company_name ASC
+
+3.Change the city of employee working with 'InfoSys' to 'Bangalore'
+
+UPDATE Employee
+SET city = 'Bangalore'
+WHERE employee_name IN (
+    SELECT employee_name FROM Works WHERE company_name = 'InfoSys'
+);
+
+4.Find names, street address, and cities of employees who work for 'TechM' and earn more than 10,000
+
+SELECT E.employee_name, E.street, E.city
+FROM Employee E
+JOIN Works W ON E.employee_name = W.employee_name
+WHERE W.company_name = 'TechM' AND W.salary > 10000;
+
+5.Add column ‘Asset’ to Company table
+
+ALTER TABLE Company
+ADD Asset DECIMAL(12,2);
+
+To check if column added:
+DESC Company;
+
+6.Find names of all employees who earn more than the average salary of all employees of their company
+
+SELECT W1.employee_name, W1.company_name, W1.salary
+FROM Works W1
+WHERE W1.salary > (
+    SELECT AVG(W2.salary)
+    FROM Works W2
+    WHERE W1.company_name = W2.company_name
+);
+
+7.Find names, street, and city for all employees who work for 'TechM' and earn more than 10,000
+
+SELECT E.employee_name, E.street, E.city
+FROM Employee E
+JOIN Works W ON E.employee_name = W.employee_name
+WHERE W.company_name = 'TechM' AND W.salary > 10000;
+
+8.Change the name of table ‘Manages’ to ‘Management’
+
+ALTER TABLE Manages
+RENAME TO Management;
+
+9.Create Simple and Unique Index on Employee table
+➤ Simple Index (on employee_name)
+CREATE INDEX emp_name_index
+ON Employee(employee_name);
+
+➤ Unique Index (on emp_id)
+CREATE UNIQUE INDEX emp_id_unique
+ON Employee(emp_id);
+
+10.Display Index Information
+show index from Employee;

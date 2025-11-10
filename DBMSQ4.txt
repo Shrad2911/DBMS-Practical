@@ -1,0 +1,93 @@
+CREATE DATABASE Q4;
+use Q4;
+CREATE TABLE Cust_Master(
+	Cust_no VARCHAR(10) PRIMARY KEY,
+	Cust_name VARCHAR(50) NOT NULL,
+	Cust_addr VARCHAR(100)
+);
+CREATE TABLE Orders (
+    Order_no VARCHAR(10) PRIMARY KEY,
+    Cust_no VARCHAR(10) NOT NULL,
+    Order_date DATE,
+    Qty_Ordered INT CHECK (Qty_Ordered > 0),
+    FOREIGN KEY (Cust_no) REFERENCES Cust_Master(Cust_no)
+);
+CREATE TABLE Product (
+    Product_no VARCHAR(10) PRIMARY KEY,
+    Product_name VARCHAR(50) NOT NULL,
+    Order_no VARCHAR(10),
+    FOREIGN KEY (Order_no) REFERENCES Orders(Order_no)
+);INSERT INTO Cust_Master VALUES
+('C1001', 'Ramesh', 'Pune'),
+('C1002', 'Sagar', 'Banglore'),
+('C1003', 'Kiran', 'Mumbai'),
+('C1004', 'Aarti', 'Manglore'),
+('C1005', 'Manish', 'Delhi'),
+('C1006', 'Rajesh', 'Banglore'),
+('C1007', 'Pavan', 'Manglore'),
+('C1008', 'Anjali', 'Pune');
+
+INSERT INTO Orders VALUES
+('O101', 'C1002', '2025-11-01', 5),
+('O102', 'C1004', '2025-11-02', 3),
+('O103', 'C1005', '2025-11-03', 7),
+('O104', 'C1007', '2025-11-04', 4),
+('O105', 'C1008', '2025-11-05', 2);
+
+INSERT INTO Product VALUES
+('P01', 'Laptop', 'O101'),
+('P02', 'Mouse', 'O102'),
+('P03', 'Keyboard', 'O103'),
+('P04', 'Monitor', 'O104'),
+('P05', 'Printer', 'O105');
+
+--List names of customers having 'A' as second letter in their name.
+SELECT Cust_name
+FROM Cust_Master
+WHERE Cust_name LIKE '_A%';
+
+--Display orders from Customer no C1002, C1005, C1007 and C1008.
+SELECT *
+FROM Orders
+WHERE Cust_no IN ('C1002', 'C1005', 'C1007', 'C1008');
+
+--List Clients who stay in either 'Banglore' or 'Manglore'
+SELECT Cust_name, Cust_addr
+FROM Cust_Master
+WHERE Cust_addr IN ('Banglore', 'Manglore');
+
+--Display name of customers & the product_name they have purchased.
+SELECT c.Cust_name, p.Product_name
+FROM Cust_Master c
+JOIN Orders o ON c.Cust_no = o.Cust_no
+JOIN Product p ON o.Order_no = p.Order_no;
+
+--Create view View1 consisting of Cust_name, Product_name.
+CREATE VIEW View1 AS
+SELECT c.Cust_name, p.Product_name
+FROM Cust_Master c
+JOIN Orders o ON c.Cust_no = o.Cust_no
+JOIN Product p ON o.Order_no = p.Order_no;
+SELECT * FROM View1;
+
+--Display product_name and quantity purchased by each customer.
+SELECT c.Cust_name, p.Product_name, o.Qty_Ordered
+FROM Cust_Master c
+JOIN Orders o ON c.Cust_no = o.Cust_no
+JOIN Product p ON o.Order_no=p.Order_no;
+
+--Perform different join operations
+--INNER JOIN
+SELECT c.Cust_name, o.Order_no
+FROM Cust_Master c
+INNER JOIN Orders o ON c.Cust_no = o.Cust_no;
+
+--LEFT JOIN
+SELECT c.Cust_name, o.Order_no
+FROM Cust_Master c
+LEFT JOIN Orders o ON c.Cust_no = o.Cust_no;
+
+--RIGHT JOIN
+SELECT c.Cust_name, o.Order_no
+FROM Cust_Master c
+RIGHT JOIN Orders o ON c.Cust_no = o.Cust_no;

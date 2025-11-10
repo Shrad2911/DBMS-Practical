@@ -1,0 +1,82 @@
+CREATE DATABASE Q5;
+USE Q5;
+CREATE TABLE Employee (
+    emp_id VARCHAR(10) PRIMARY KEY,
+    employee_name VARCHAR(50) NOT NULL,
+    street VARCHAR(50),
+    city VARCHAR(50)
+);
+
+CREATE TABLE Company (
+    company_name VARCHAR(50) PRIMARY KEY,
+    city VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE Works (
+    emp_id VARCHAR(10) NOT NULL,
+    company_name VARCHAR(50) NOT NULL,
+    salary DECIMAL(10,2) CHECK (salary > 0),
+    FOREIGN KEY (emp_id) REFERENCES Employee(emp_id),
+    FOREIGN KEY (company_name) REFERENCES Company(company_name)
+);
+
+CREATE TABLE Manages (
+    emp_id VARCHAR(10) NOT NULL,
+    manager_id VARCHAR(10) NOT NULL,
+    FOREIGN KEY (emp_id) REFERENCES Employee(emp_id),
+    FOREIGN KEY (manager_id) REFERENCES Employee(emp_id)
+);
+
+INSERT INTO Employee VALUES
+('E101', 'Ramesh', 'MG Road', 'Pune'),
+('E102', 'Suresh', 'BTM Layout', 'Hyderabad'),
+('E103', 'Mahesh', 'Marine Drive', 'Mumbai'),
+('E104', 'Neha', 'Koregaon Park', 'Pune'),
+('E105', 'Aarti', 'Andheri', 'Mumbai');
+
+INSERT INTO Company VALUES
+('TCS', 'Pune'),
+('InfoSys', 'Hyderabad'),
+('TechM', 'Chennai'),
+('Wipro', 'Bangalore');
+
+INSERT INTO Works VALUES
+('E101', 'TCS', 8000),
+('E102', 'InfoSys', 12000),
+('E103', 'TechM', 15000),
+('E104', 'TCS', 9000),
+('E105', 'Wipro', 11000);
+
+INSERT INTO Manages VALUES
+('E101', 'E104'),
+('E102', 'E105'),
+('E103', 'E102');
+
+-- 1. Employees working for 'TCS'
+SELECT e.employee_name
+FROM Employee e
+JOIN Works w ON e.emp_id = w.emp_id
+WHERE w.company_name = 'TCS';
+
+-- 2. Names & company sorted ASC by company, DESC by employee
+SELECT e.employee_name, w.company_name
+FROM Employee e
+JOIN Works w ON e.emp_id = w.emp_id
+ORDER BY w.company_name ASC, e.employee_name DESC;
+
+-- 3. Change city of employee working with 'InfoSys' to 'Bangalore'
+UPDATE Employee
+SET city = 'Bangalore'
+WHERE emp_id IN (
+    SELECT emp_id FROM Works WHERE company_name = 'InfoSys'
+);
+
+-- 4. Employees in 'TechM' earning > 10000
+SELECT e.employee_name, e.street, e.city
+FROM Employee e
+JOIN Works w ON e.emp_id = w.emp_id
+WHERE w.company_name = 'TechM' AND w.salary > 10000;
+
+-- 5. Add Asset column to Company
+ALTER TABLE Company ADD Asset DECIMAL(15,2);
+DESCRIBE Company;

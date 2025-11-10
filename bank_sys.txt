@@ -1,0 +1,236 @@
+insert into  Branch VALUES
+('Akurdi', 'Pune', 13000),('Nigdi', 'Pune', 12000),('VimanNagar', 'Pune', 50000),('Bopodi', 'Pune', 4000),('Dapodi', 'Pune', 60000),('MumbaiCentral', 'Mumbai', 500000),('LaturMain', 'Latur', 300000),('ShivajiNagar', 'Pune', 7000000),('Kothrud_Branch', 'Pune', 400000),('Solapur_Main', 'Solapur', 600000);
+
+INSERT INTO Customer VALUES
+('Ravi', 'MG Road', 'Pune'),
+('Sneha', 'Station Road', 'Latur'),
+('Amit', 'FC Road', 'Pune'),
+('Priya', 'Shivaji Nagar', 'Pune'),
+('Kiran', 'Main Street', 'Mumbai'),
+('Neha', 'Market Road', 'Solapur'),
+('Rohit', 'College Road', 'Latur'),
+('Meera', 'Park Street', 'Mumbai'),
+('Arjun', 'IT Park', 'Pune'),
+('Pooja', 'Dapodi Road', 'Pune');
+
+INSERT INTO Account VALUES
+(1001, 'Akurdi', 20000),
+(1002, 'Nigdi', 15000),
+(1003, 'VimanNagar', 50000),
+(1004, 'Bopodi', 12000),
+(1005, 'Dapodi', 35000),
+(1006, 'MumbaiCentral', 80000),
+(1007, 'LaturMain', 40000),
+(1008, 'ShivajiNagar', 70000),
+(1009, 'Kothrud_Branch', 25000),
+(1010, 'Solapur_Main', 30000);
+
+INSERT INTO Loan VALUES
+(2001, 'Akurdi', 10000),
+(2002, 'Nigdi', 15000),
+(2003, 'VimanNagar', 40000),
+(2004, 'Bopodi', 8000),
+(2005, 'Dapodi', 25000),
+(2006, 'MumbaiCentral', 50000),
+(2007, 'LaturMain', 30000),
+(2008, 'ShivajiNagar', 90000),
+(2009, 'Kothrud_Branch', 20000),
+(2010, 'Solapur_Main', 22000);
+
+INSERT INTO Depositor VALUES
+('Ravi', 1001),
+('Sneha', 1007),
+('Amit', 1003),
+('Priya', 1008),
+('Kiran', 1006),
+('Neha', 1010),
+('Rohit', 1007),
+('Meera', 1006),
+('Arjun', 1009),
+('Pooja', 1005);
+
+INSERT INTO Borrower VALUES
+('Ravi', 2001),
+('Sneha', 2007),
+('Amit', 2003),
+('Priya', 2008),
+('Kiran', 2006),
+('Neha', 2010),
+('Rohit', 2007),
+('Meera', 2006),
+('Arjun', 2009),
+('Pooja', 2005);
+
+1.Find the names of all branches in the Loan relation
+
+SELECT DISTINCT branch_name 
+FROM Loan;
+
+2️⃣ Find all loan numbers for loans made at "Wadia College" branch with amount > 12000
+
+SELECT loan_no 
+FROM Loan 
+WHERE branch_name = 'Wadia College' 
+  AND amount > 12000; 
+
+3️⃣ Find all customers who have a loan from the bank.
+
+Show their name, loan number, and loan amount.**
+
+SELECT B.cust_name, L.loan_no, L.amount
+FROM Borrower B
+JOIN Loan L ON B.loan_no = L.loan_no;
+
+4️⃣ List all customers in alphabetical order who have a loan from "Wadia College" branch
+SELECT DISTINCT B.cust_name
+FROM Borrower B
+JOIN Loan L ON B.loan_no = L.loan_no
+WHERE L.branch_name = 'Wadia College'
+ORDER BY B.cust_name ASC;
+
+5️⃣ Display distinct cities of branch
+SELECT DISTINCT branch_city 
+FROM Branch;
+
+6. Find all customers who have both account and loan at the bank
+ We’ll use the Depositor and Borrower tables.
+
+SELECT DISTINCT D.cust_name
+FROM Depositor D
+JOIN Borrower B ON D.cust_name = B.cust_name;
+
+7.Find all customers who have an account or loan or both at the bank
+We can use UNION to combine the names from both tables.
+
+SELECT cust_name FROM Depositor
+UNION
+SELECT cust_name FROM Borrower;
+
+8.Find all customers who have an account but no loan at the bank
+ Use NOT IN or LEFT JOIN method.
+
+SELECT DISTINCT D.cust_name
+FROM Depositor D
+WHERE D.cust_name NOT IN (SELECT cust_name FROM Borrower);
+Query using LEFT JOIN
+SELECT DISTINCT D.cust_name
+FROM Depositor D
+LEFT JOIN Borrower B
+ON D.cust_name = B.cust_name
+WHERE B.cust_name IS NULL; 
+
+9.Find average account balance at "Wadia College" branch
+SELECT AVG(balance) AS avg_balance
+FROM Account
+WHERE branch_name = 'Wadia College'; 
+
+10.Find number of depositors at each branch
+We must join Depositor → Account → Branch to connect customer and branch.
+
+SELECT A.branch_name, COUNT(DISTINCT D.cust_name) AS no_of_depositors
+FROM Depositor D
+JOIN Account A ON D.acc_no = A.acc_no
+GROUP BY A.branch_name; 
+
+11.Find the branches where average account balance > 15000
+SELECT branch_name, AVG(balance) AS avg_balance
+FROM Account
+GROUP BY branch_name
+HAVING AVG(balance) > 15000;
+
+12.Find number of tuples in Customer relation
+SELECT COUNT(*) AS total_customers
+FROM Customer;
+
+13.Calculate total loan amount given by bank
+SELECT SUM(amount) AS total_loan_amount
+FROM Loan;
+
+14.Delete all loans with loan amount between 1300 and 1500
+DELETE FROM Loan
+WHERE amount BETWEEN 1300 AND 1500; 
+
+15. Find the average account balance at each branch
+SELECT branch_name, AVG(balance) AS avg_balance
+FROM Account
+GROUP BY branch_name; 
+
+16. Find name of customer and city where customer name starts with letter ‘P’
+SELECT cust_name, cust_city
+FROM Customer
+WHERE cust_name LIKE 'P%'; 
+
+
+VIEW:
+1. Create a View1 to display List all customers in alphabetical order who have loan from Pune_Station branch.
+ create view view1 as
+ select distinct B.cust_name
+ from Borrower
+ join Loan L on B.loan_no = L.loan_no
+ where L.branch_name = "pune_station"
+ order by B.cust_name ASC ; 
+
+2.Create View2 on branch table by selecting any two columns and perform insert update delete operations.
+
+create view view2 as
+SELECT branch_name, assets
+FROM Branch;
+
+INSERT INTO View2 (branch_name, assets)
+VALUES ('NewBranch', 250000);
+
+UPDATE View2
+SET assets = 300000
+WHERE branch_name = 'NewBranch';
+
+DELETE FROM View2
+WHERE branch_name = 'NewBranch';
+
+
+3.Create View3 on borrower and depositor table by selecting any one column from each table perform insert update delete operations.
+
+CREATE VIEW View3 AS
+SELECT D.cust_name AS depositor_name, B.loan_no
+FROM Depositor D
+JOIN Borrower B ON D.cust_name = B.cust_name;
+
+INSERT INTO View3 (depositor_name, loan_no)
+VALUES ('Ravi', 2001);
+
+UPDATE View3
+SET loan_no = 2003
+WHERE depositor_name = 'Ravi';
+
+DELETE FROM View3
+WHERE depositor_name = 'Ravi';
+
+4. Create Union of Left and Right Join To get all customers who have account or loan or both.
+
+SELECT D.cust_name
+FROM Depositor D
+LEFT JOIN Borrower B ON D.cust_name = B.cust_name
+
+UNION
+
+SELECT B.cust_name
+FROM Borrower B
+RIGHT JOIN Depositor D ON D.cust_name = B.cust_name;
+
+5.Create Simple and Unique Index
+simple:
+ CREATE INDEX idx_balance ON Account(balance);
+
+unique:
+  CREATE UNIQUE INDEX idx_customer_name ON Customer(cust_name);
+
+6.Display Index Information
+
+In SQL (varies by DBMS):
+
+🔹 For MySQL:
+SHOW INDEX FROM Account;
+SHOW INDEX FROM Customer;
+ For SQL Server:
+EXEC sp_helpindex 'Account';
+EXEC sp_helpindex 'Customer';
+

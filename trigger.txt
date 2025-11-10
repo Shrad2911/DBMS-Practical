@@ -1,0 +1,126 @@
+create table library ( rollno int , name char(10) , dateofissue date, nameofbook char(10), status char(10) );
+ 
+SQL> describe library;
+ Name                                      Null?    Type
+ ----------------------------------------- -------- ----------------------------
+ ROLLNO                                             NUMBER(38)
+ NAME                                               VARCHAR2(10)
+ DATEOFISSUE                                        DATE
+ NAMEOFBOOK                                         VARCHAR2(10)
+ STATUS                                             CHAR(10)
+
+SQL> insert into library values( 101, 'Ram', to_date('2025-02-12','YYYY-MM-DD'),'CN','I');
+SQL> insert into library values( 102, 'Ravi', to_date('2025-03-11','YYYY-MM-DD'),'DS','I');
+SQL> insert into library values( 103, 'Savi', to_date('2025-04-01','YYYY-MM-DD'),'IAS','I');
+SQL> insert into library values( 104, 'Vishwa', to_date('2025-05-21','YYYY-MM-DD'),'SPOS','I');
+SQL> insert into library values( 105, 'Rahul', to_date('2025-06-20','YYYY-MM-DD'),'TOC','I');
+SQL> select*from library;
+
+    ROLLNO NAME       DATEOFISS NAMEOFBOOK STATUS
+---------- ---------- --------- ---------- ----------
+       101 Ram        12-FEB-25 CN         I
+       102 Ravi       11-MAR-25 DS         I
+       103 Savi       01-APR-25 IAS        I
+       104 Vishwa     21-MAY-25 SPOS       I
+       105 Rahul      20-JUN-25 TOC        I
+
+SQL> create table library_audit(rollno int, name char(10), dateofissue date, nameofbook char(10),status char(10),ts timestamp);
+
+Table created.
+
+SQL> select*from library_audit;
+
+     CREATE OR REPLACE TRIGGER AF5 AFTER INSERT OR UPDATE OR DELETE ON library FOR EACH ROW
+        BEGIN       
+        IF UPDATING THEN
+           INSERT INTO library_audit values(:old.rollno, :old.name, :old.dateofissue,:old.nameofbook,:old.status,current_timestamp);
+        ELSIF INSERTING THEN
+           INSERT INTO library_audit values(:new.rollno,:new.name,:new.dateofissue,:new.nameofbook,:new.status,current_timestamp);
+        ELSIF DELETING THEN
+           INSERT INTO library_audit values(:old.rollno,:old.name,:old.dateofissue,:old.nameofbook,:old.status,current_timestamp);
+        END IF;
+      END;
+       /
+SQL> insert into library values(106,'Gajanan',to_date('2025-11-10','YYYY-MM-DD'),'DDA','I');
+
+1 row created.
+
+SQL> select*from library;
+
+    ROLLNO NAME       DATEOFISS NAMEOFBOOK STATUS
+---------- ---------- --------- ---------- ----------
+       101 Ram        12-FEB-25 CN         I
+       102 Ravi       11-MAR-25 DS         I
+       103 Savi       01-APR-25 IAS        I
+       104 Vishwa     21-MAY-25 SPOS       I
+       105 Rahul      20-JUN-25 TOC        I
+       106 Gajanan    10-NOV-25 DDA        I
+
+6 rows selected.
+
+SQL> select*from library_audit;
+
+    ROLLNO NAME       DATEOFISS NAMEOFBOOK STATUS
+---------- ---------- --------- ---------- ----------
+TS
+---------------------------------------------------------------------------
+       106 Gajanan    10-NOV-25 DDA        I
+09-NOV-25 11.52.50.502000 PM
+
+SQL> update library set nameofbook='MongoDB' where library.rollno=101;
+
+1 row updated.
+
+SQL> select*from library;
+
+    ROLLNO NAME       DATEOFISS NAMEOFBOOK STATUS
+---------- ---------- --------- ---------- ----------
+       101 Ram        12-FEB-25 MongoDB    I
+       102 Ravi       11-MAR-25 DS         I
+       103 Savi       01-APR-25 IAS        I
+       104 Vishwa     21-MAY-25 SPOS       I
+       105 Rahul      20-JUN-25 TOC        I
+       106 Gajanan    10-NOV-25 DDA        I
+
+6 rows selected.
+
+SQL> select*from library_audit;
+
+    ROLLNO NAME       DATEOFISS NAMEOFBOOK STATUS
+---------- ---------- --------- ---------- ----------
+TS
+---------------------------------------------------------------------------
+       106 Gajanan    10-NOV-25 DDA        I
+09-NOV-25 11.52.50.502000 PM
+
+       101 Ram        12-FEB-25 CN         I
+
+
+SQL> delete from library where rollno=102;
+
+1 row deleted.
+
+SQL> select*from library;
+
+    ROLLNO NAME       DATEOFISS NAMEOFBOOK STATUS
+---------- ---------- --------- ---------- ----------
+       101 Ram        12-FEB-25 MongoDB    I
+       103 Savi       01-APR-25 IAS        I
+       104 Vishwa     21-MAY-25 SPOS       I
+       105 Rahul      20-JUN-25 TOC        I
+       106 Gajanan    10-NOV-25 DDA        I
+
+SQL> select*from library_audit;
+
+    ROLLNO NAME       DATEOFISS NAMEOFBOOK STATUS
+---------- ---------- --------- ---------- ----------
+TS
+---------------------------------------------------------------------------
+       106 Gajanan    10-NOV-25 DDA        I
+09-NOV-25 11.52.50.502000 PM
+
+       101 Ram        12-FEB-25 CN         I
+09-NOV-25 11.55.19.519000 PM
+
+       102 Ravi       11-MAR-25 DS         I
+09-NOV-25 11.56.54.895000 PM

@@ -1,0 +1,60 @@
+
+CREATE TABLE Library (
+    Book_ID NUMBER PRIMARY KEY,
+    Book_Name VARCHAR2(100),
+    Author VARCHAR2(100),
+    Price NUMBER(10,2)
+);
+
+CREATE TABLE Library_Audit (
+    Audit_ID NUMBER GENERATED ALWAYS AS IDENTITY,
+    Book_ID NUMBER,
+    Book_Name VARCHAR2(100),
+    Author VARCHAR2(100),
+    Price NUMBER(10,2),
+    Operation VARCHAR2(30),
+    Action_Date DATE
+);
+INSERT INTO Library VALUES (1, 'Wings of Fire', 'A.P.J. Abdul Kalam', 350);
+INSERT INTO Library VALUES (2, 'The White Tiger', 'Aravind Adiga', 400);
+INSERT INTO Library VALUES (3, 'India 2020', 'A.P.J. Abdul Kalam', 280);
+COMMIT;
+
+CREATE OR REPLACE TRIGGER trg_Library_before
+BEFORE UPDATE OR DELETE ON Library
+FOR EACH ROW
+DECLARE
+    v_operation VARCHAR2(20);
+BEGIN
+    IF UPDATING THEN
+        v_operation := 'BEFORE UPDATE';
+    ELSIF DELETING THEN
+        v_operation := 'BEFORE DELETE';
+    END IF;
+
+    INSERT INTO Library_Audit(Book_ID, Book_Name, Author, Price, Operation, Action_Date)
+    VALUES(:OLD.Book_ID, :OLD.Book_Name, :OLD.Author, :OLD.Price, v_operation, SYSDATE);
+END;
+/
+CREATE OR REPLACE TRIGGER trg_Library_after
+AFTER UPDATE OR DELETE ON Library
+FOR EACH ROW
+DECLARE
+    v_operation VARCHAR2(20);
+BEGIN
+    IF UPDATING THEN
+        v_operation := 'AFTER UPDATE';
+    ELSIF DELETING THEN
+        v_operation := 'AFTER DELETE';
+    END IF;
+
+    INSERT INTO Library_Audit(Book_ID, Book_Name, Author, Price, Operation, Action_Date)
+    VALUES(:OLD.Book_ID, :OLD.Book_Name, :OLD.Author, :OLD.Price, v_operation, SYSDATE);
+END;
+/
+
+UPDATE Library SET Price = 500 WHERE Book_ID = 1;
+DELETE FROM Library WHERE Book_ID = 3;
+COMMIT;
+
+SELECT * FROM Library_Audit ORDER BY Audit_ID;
